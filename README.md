@@ -31,7 +31,7 @@ tamagotchi
 ## Running the Application
 Para iniciar el juego, ejecuta en tu terminal:
 ```
-python src/main.py
+python -m src.main
 ```
 
 ## Features
