@@ -1,4 +1,5 @@
 import random
+import src.item import Item
 
 class Game:
     """
@@ -39,7 +40,6 @@ class Game:
         self.tama._aplicar_efectos({"salud": -20})
 
     def _evento_encontrar_fruta(self):
-        from src.tamagotchi import Item
         self.tama.inventario.add(Item("Manzana", "comida", {"hambre": 20, "felicidad": 5}))
 
     def _verificar_muerte_extendida(self):
