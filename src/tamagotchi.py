@@ -31,16 +31,16 @@ class Tamagotchi:
 
         # Contadores de turnos críticos para muerte por acumulación
         self.__turnos_criticos = 0
+        self.__edad_counter = 0
 
-        self.inventario = Inventario(12)
+        self.inventario = Inventario(10)
 
         self.params = {
             "edad": 1,
-            "turnos_para_envejecer": 1,
+            "turnos_para_envejecer": 10,
             "critico_threshold": 10,
             "turnos_criticos_para_muerte": 3,
         }
-        print(self.mostrar_estado_detallado())
 
     # Atributos
     @property
@@ -151,9 +151,10 @@ class Tamagotchi:
 
     # Deterioro por turnos, se llama cada vez que se actualiza el juego
     def deterioro_por_turno(self):
+        # Deterioro reducido
         self._aplicar_efectos({
-            "hambre": -2,
-            "sed": -3,
+            "hambre": -1,
+            "sed": -2,
             "felicidad": -1,
             "energia": -1,
             "limpieza": -1
@@ -161,8 +162,15 @@ class Tamagotchi:
 
         if self.__hambre < 20 or self.__sed < 20 or self.__limpieza < 20:
             self._aplicar_efectos({"salud": -2})
+            
     def actualizar_edad(self):
-        self.__edad += self.params.get("edad", 1)
+        # Envejecer cada 10 turnos (días)
+        turnos_para_envejecer = self.params.get("turnos_para_envejecer", 10)
+        self.__edad_counter += 1
+        if self.__edad_counter >= turnos_para_envejecer:
+            self.__edad += self.params.get("edad", 1)
+            self.__edad_counter = 0
+
     def _chequear_criticos_acumulados(self):
         """
         Incrementa contador de turnos críticos si 3 o más atributos están en zona crítica.

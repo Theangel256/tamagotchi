@@ -1,9 +1,11 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox, simpledialog
 
 from src.tamagotchi import Tamagotchi
 from src.item import Item
-from src.gui.components import CharacterDisplay, StatsPanel, ActionPanel, InventoryPanel, GamePanel   
+from src.game import Game
+from src.gui.components import CharacterDisplay, StatsPanel, ActionPanel, InventoryPanel, StatusIndicators, LogPanel
+
 
 class TamagotchiApp:
     STARTING_ITEMS = [
@@ -11,149 +13,135 @@ class TamagotchiApp:
         ("Poción", "medicina", {"salud": 50}),
         ("Pelota", "juguete", {"felicidad": 15, "energia": -5}),
         ("Agua", "agua", {"sed": 10, "energia": 5}),
-        ("Agua", "agua", {"sed": 10, "energia": 5})
+        ("Agua", "agua", {"sed": 10, "energia": 5}),
     ]
 
-    def __init__(self, root):
+    def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Tamagotchi")
-        self.root.geometry("450x750")
+        self.root.geometry("540x960")
         self.root.configure(bg="#f0f4f8")
-        
-        # Initialize Logic
-        self.tama = Tamagotchi("Kakaroto", 0)
+
+        # Pedir nombre
+        nombre = simpledialog.askstring("Nombre", "¿Cómo quieres llamar a tu Tamagotchi?", parent=self.root)
+        if not nombre:
+            nombre = "Kakaroto"
+
+        # Modelo y controlador
+        self.tama = Tamagotchi(nombre, 0)
+        self.game = Game(self.tama)
         self._add_starting_items()
-        
-        self.setup_ui()
-        self.updateTicks()
+
+        # UI
+        self._setup_menu()
+        self._setup_notebook()
+        self.update_ui()
+
+        # Loop del juego (tick)
+        self.root.after(1000, self.update_loop)
 
     def _add_starting_items(self):
-        """Agrega los objetos iniciales al inventario."""
         for nombre, tipo, efectos in self.STARTING_ITEMS:
             self.tama.inventario.add(Item(nombre, tipo, efectos))
 
-    # -----------------------------
-    # UI setup
-    # -----------------------------
-    def setup_ui(self):
-        self._configure_notebook_style()
+    def _setup_menu(self):
+        menubar = tk.Menu(self.root)
+        ayuda = tk.Menu(menubar, tearoff=0)
+        ayuda.add_command(label="Reglas del juego", command=self._mostrar_ayuda)
+        ayuda.add_command(label="Mostrar estado detallado", command=self._show_status_popup)
+        ayudat = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Ayuda", menu=ayuda)
+        self.root.config(menu=menubar)
+
+    def _setup_notebook(self):
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("TNotebook.Tab", font=("Helvetica", 10, "bold"))
 
         self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Tabs
-        self.tab_general = tk.Frame(self.notebook, bg="#9C9C9C")
-        self.tab_inventory = tk.Frame(self.notebook, bg="#9C9C9C")
-        self.tab_game = tk.Frame(self.notebook, bg="#9C9C9C")
+        self.notebook.pack(side="top", fill="both", expand=True, padx=8, pady=8)
+
+        self.tab_general = tk.Frame(self.notebook, bg="#f7f7f7")
+        self.tab_inventario = tk.Frame(self.notebook, bg="#f7f7f7")
 
         self.notebook.add(self.tab_general, text="General")
-        self.notebook.add(self.tab_inventory, text="Inventario")
-        self.notebook.add(self.tab_game, text="Juego")
-        
-        self.setup_general_tab()
-        self.setup_inventory_tab()
-        self.setup_game_tab()
+        self.notebook.add(self.tab_inventario, text="Inventario")
 
-    def _configure_notebook_style(self):
-        style = ttk.Style()
-        style.theme_use('clam')
-        style.configure("TNotebook", background="#634848", borderwidth=0)
-        style.configure(
-            "TNotebook.Tab",
-            background="#634848",
-            foreground="#ffffff",
-            padding=[10, 5],
-            font=("Helvetica", 10, "bold")
-        )
-        style.map(
-            "TNotebook.Tab",
-            background=[("selected", "#634848")],
-            foreground=[("selected", "#ffffff")]
-        )
-
-    # -----------------------------
-    # Tabs
-    # -----------------------------
-    def setup_general_tab(self):
+        # Panels
         self.char_display = CharacterDisplay(self.tab_general, self.tama)
-        self.char_display.pack(fill="x")
+        self.char_display.pack(fill="x", pady=(6, 0))
         
+        self.status_indicators = StatusIndicators(self.tab_general, self.tama)
+        self.status_indicators.pack(fill="x", padx=8, pady=4)
+
         self.stats_panel = StatsPanel(self.tab_general, self.tama)
-        self.stats_panel.pack(fill="x", padx=10, pady=10)
+        self.stats_panel.pack(fill="x", padx=8, pady=8)
         
-        self.action_panel = ActionPanel(self.tab_general, self.tama, self.on_action)
-        self.action_panel.pack(fill="x", padx=10, pady=10)
+        self.action_panel = ActionPanel(self.tab_general, self.tama, self.game, self._on_event)
+        self.action_panel.pack(fill="x", padx=8, pady=6)
+        
+        # LogPanel ahora dentro de General
+        self.log_panel = LogPanel(self.tab_general)
+        self.log_panel.pack(fill="both", expand=True, padx=8, pady=8)
 
-    def setup_inventory_tab(self):
-        self.inventory_panel = InventoryPanel(self.tab_inventory, self.tama, self.on_action)
-        self.inventory_panel.pack(fill="both", expand=True, padx=10, pady=10)
+        self.inventory_panel = InventoryPanel(self.tab_inventario, self.tama, self.game, self._on_event)
+        self.inventory_panel.pack(fill="both", expand=True, padx=8, pady=8)
 
-    def setup_game_tab(self):
-        self.game_panel = GamePanel(self.tab_game, self.tama, self.on_action)
-        self.game_panel.pack(fill="both", expand=True, padx=10, pady=10)
-
-    # -----------------------------
-    # Updates
-    # -----------------------------
-    def on_action(self):
+    def _on_event(self, mensaje: str):
+        # Callback desde componentes; muestra mensaje y actualiza UI
+        if mensaje:
+            self.log_panel.add_message(mensaje)
         self.update_ui()
 
     def update_ui(self):
         self.char_display.update_display()
+        self.status_indicators.update_status()
         self.stats_panel.update_stats()
         self.inventory_panel.refreshInventory()
 
-    # -----------------------------
-    # Timer loop
-    # -----------------------------
-    def updateTicks(self):
+    def update_loop(self):
+        # Avanza el juego por tick automático (si está vivo)
         if self.tama.vivo:
-            self.tama.tick()
+            msg = self.game.avanzar_turno()
+            if msg:
+                self.log_panel.add_message(msg)
             self.update_ui()
-            self.root.after(1000, self.updateTicks)
+            self.root.after(1000, self.update_loop)
         else:
-            self.update_ui()
-            self.show_game_over()
+            # Mostrar overlay Game Over
+            self._show_game_over()
 
-    # -----------------------------
-    # Game Over
-    # -----------------------------
-    def show_game_over(self):
-        if hasattr(self, 'game_over_frame') and self.game_over_frame.winfo_exists():
-            return
+    # -----------
+    # Utilidades
+    # -----------
+    def _mostrar_ayuda(self):
+        texto = (
+            "Reglas básicas:\n"
+            "- Mantén hambre, sed y salud lejos de 0.\n"
+            "- Si 3 atributos están críticos durante varios turnos, puede morir.\n"
+            "- Eventos aleatorios pueden afectar su estado.\n"
+            "- Usa items desde Inventario. Hay capacidad máxima.\n"
+            "- Puedes saltar turno con el botón correspondiente.\n"
+            "\nObjetivo: Mantener a la mascota viva el mayor tiempo posible."
+        )
+        messagebox.showinfo("Reglas del juego", texto)
 
-        self.game_over_frame = tk.Frame(self.root, bg="#2d3436")
-        self.game_over_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+    def _show_status_popup(self):
+        messagebox.showinfo("Estado detallado", self.tama.mostrar_estado_detallado())
 
-        container = tk.Frame(self.game_over_frame, bg="#2d3436")
-        container.place(relx=0.5, rely=0.5, anchor="center")
-        
-        tk.Label(
-            container,
-            text="GAME OVER",
-            font=("Helvetica", 30, "bold"),
-            fg="#ff7675",
-            bg="#2d3436"
-        ).pack(pady=20)
-        
-        tk.Button(
-            container,
-            text="Reiniciar",
-            command=self.restart_game,
-            font=("Helvetica", 14, "bold"),
-            bg="#55efc4",
-            fg="#2d3436"
-        ).pack(pady=20)
+    def _show_game_over(self):
+        # Overlay simple
+        overlay = tk.Frame(self.root, bg="#2d3436")
+        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
+        c = tk.Frame(overlay, bg="#2d3436")
+        c.place(relx=0.5, rely=0.5, anchor="center")
+        tk.Label(c, text="GAME OVER", font=("Helvetica", 30, "bold"), fg="#ff7675", bg="#2d3436").pack(pady=10)
+        tk.Button(c, text="Reiniciar", command=self._restart, bg="#55efc4").pack(pady=8)
+        tk.Button(c, text="Estado detallado", command=self._show_status_popup, bg="#dfe6e9").pack(pady=8)
 
-    def restart_game(self):
-        if hasattr(self, 'game_over_frame'):
-            self.game_over_frame.destroy()
-        
-        if hasattr(self, 'notebook'):
-            self.notebook.destroy()
-
-        self.tama = Tamagotchi("Kakaroto", 0)
-        self._add_starting_items()
-
-        self.setup_ui()
-        self.updateTicks()
+    def _restart(self):
+        # Reiniciar la app (recrea modelo y controlador)
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        # recrear todo
+        self.__init__(self.root)
