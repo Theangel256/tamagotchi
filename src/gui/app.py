@@ -22,6 +22,13 @@ class TamagotchiApp:
         self.root.geometry("540x860")
         self.root.configure(bg="#f0f4f8")
         
+        
+        # Set window icon
+        try:
+            self.root.iconbitmap("icons/tamagotchi.ico")
+        except:
+            pass  # Ignore if icon file not found
+        
         # Centrar la ventana en el monitor
         self.root.update_idletasks()
         window_width = 540
