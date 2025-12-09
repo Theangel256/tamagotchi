@@ -1,4 +1,4 @@
-name: Build and Release
+name: 🚀 Build and Release
 
 on:
   push:
@@ -11,34 +11,92 @@ permissions:
 
 jobs:
   build:
+    name: 🏗️ Build Windows Executable
     runs-on: windows-latest
     
     steps:
-    - name: Checkout code
+    - name: 📥 Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for changelog
 
-    - name: Set up Python
+    - name: 🐍 Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
 
-    - name: Install dependencies
+    - name: 📦 Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
 
-    - name: Build with PyInstaller
+    - name: 🔨 Build with PyInstaller
       run: pyinstaller build.spec
 
-    - name: Upload Artifact
+    - name: 📤 Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Tamagotchi-Windows
+        name: Tamagotchi-Windows-${{ github.ref_name }}
         path: dist/Tamagotchi.exe
+        retention-days: 90
 
-    - name: Release
+    - name: 📝 Generate Changelog
+      id: changelog
+      run: |
+        $tag = "${{ github.ref_name }}"
+        $previousTag = git describe --tags --abbrev=0 $tag^ 2>$null
+        
+        if ($previousTag) {
+          $commits = git log "$previousTag..$tag" --pretty=format:"- %s (%h)" --no-merges
+        } else {
+          $commits = git log $tag --pretty=format:"- %s (%h)" --no-merges
+        }
+        
+        $changelog = @"
+        ## 📋 Cambios en esta versión
+        
+        $commits
+        "@
+        
+        # Save to file for release notes
+        $changelog | Out-File -FilePath changelog.txt -Encoding utf8
+        
+        # Also output for GitHub Actions
+        echo "CHANGELOG<<EOF" >> $env:GITHUB_OUTPUT
+        echo "$changelog" >> $env:GITHUB_OUTPUT
+        echo "EOF" >> $env:GITHUB_OUTPUT
+
+    - name: 🎉 Create Release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: dist/Tamagotchi.exe
+        generate_release_notes: false
+        body: |
+          # CI build v${{ github.ref_name }}
+          
+          ## 💾 Download
+          
+          Download the Windows executable from the resources below.
+
+          ${{ steps.changelog.outputs.CHANGELOG }}
+          
+          ## 🛠️ Build Information
+          
+          - **Plataforma**: Windows (x64)
+          - **Python**: 3.12
+          - **Build**: #${{ github.run_number }}
+          - **Commit**: ${{ github.sha }}
+          
+          ## 📖 How to use
+          
+          1. Download `Tamagotchi.exe`
+          2. Run the file
+          3. Enjoy taking care of your virtual pet!
+          
+          ---
+          
+          **Note**: If Windows Defender blocks the executable, it is normal for applications without digital signature. You can click on "More information" → "Run anyway".
+        draft: false
+        prerelease: true
