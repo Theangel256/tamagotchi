@@ -81,6 +81,7 @@ jobs:
           
           Download the Windows executable from the resources below.
 
+          
           ${{ steps.changelog.outputs.CHANGELOG }}
           
           ## 🛠️ Build Information
