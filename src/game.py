@@ -1,7 +1,7 @@
 import random
 from typing import Optional
-from src.item import Item
-from src.tamagotchi import Tamagotchi
+from item import Item
+from tamagotchi import Tamagotchi
 
 class Game:
     """

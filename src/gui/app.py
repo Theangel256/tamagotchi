@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 
-from src.tamagotchi import Tamagotchi
-from src.item import Item
-from src.game import Game
-from src.gui.components import CharacterDisplay, StatsPanel, ActionPanel, InventoryPanel, StatusIndicators, LogPanel
+from tamagotchi import Tamagotchi
+from item import Item
+from game import Game
+from gui.components import CharacterDisplay, StatsPanel, ActionPanel, InventoryPanel, StatusIndicators, LogPanel
 
 
 class TamagotchiApp:

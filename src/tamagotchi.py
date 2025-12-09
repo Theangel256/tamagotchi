@@ -1,4 +1,4 @@
-from src.inventario import Inventario
+from inventario import Inventario
 
 class Tamagotchi:
     """

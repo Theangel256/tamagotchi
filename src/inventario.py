@@ -1,4 +1,5 @@
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
+from item import Item
 
 class Inventario:
     """
@@ -18,16 +19,16 @@ class Inventario:
                                     Por defecto es 10.
         """
         # Diccionario: nombre_item -> lista de objetos item
-        self.__items: Dict[str, List[Any]] = {}
+        self.__items: Dict[str, List[Item]] = {}
         self.__capacidad = capacidad_maxima
 
     @property
-    def items(self) -> Dict[str, List[Any]]:
+    def items(self) -> Dict[str, List[Item]]:
         """
         Lista de items almacenados.
         
         Returns:
-            Dict[str, List[Any]]: Diccionario donde la clave es el nombre del item
+            Dict[str, List[Item]]: Diccionario donde la clave es el nombre del item
                                   y el valor es una lista de instancias de Item.
         """
         return self.__items
