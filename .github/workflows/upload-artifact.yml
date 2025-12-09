@@ -44,7 +44,7 @@ jobs:
     - name: 📝 Generate Changelog
       id: changelog
       run: |
-        $tag = "${{ github.ref_name }}"
+        $tag = "CI Build ${github.ref_name}"
         $previousTag = git describe --tags --abbrev=0 $tag^ 2>$null
         
         if ($previousTag) {
@@ -74,8 +74,6 @@ jobs:
         files: dist/Tamagotchi.exe
         generate_release_notes: false
         body: |
-          # CI build ${{ github.ref_name }}
-          
           ## 💾 Download
           
           Download the Windows executable from the resources below.
