@@ -2,8 +2,8 @@
 
 
 a = Analysis(
-    ['main.py'],
-    pathex=['.', r'C:\Users\Administrator\Projects\tamagotchi\src'],
+    ['src/main.py'],
+    pathex=['.', 'src'],
     binaries=[],
     datas=[],
     hiddenimports=[],
@@ -22,7 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='tamagotchi',
+    name='Tamagotchi',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -35,4 +35,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='icons/tamagotchi.ico',
+    onefile=True,
 )

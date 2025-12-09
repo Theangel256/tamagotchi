@@ -3,7 +3,6 @@
     <h1 align="center">Tamagotchi</h1>
 </p>
 
-## Overview
 Este proyecto para la clase de Programación 1, implementa una interfaz gráfica de usuario (GUI) del clásico juego Tamagotchi. Los usuarios pueden interactuar con su mascota virtual alimentándola, dándole agua, jugando y monitoreando su salud y felicidad.
 
 ## Screenshots
