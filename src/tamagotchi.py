@@ -11,9 +11,9 @@ class Tamagotchi:
     EVOLUTIONS = [
         (0, "Huevo"),
         (5, "Bebé"),
-        (20, "Joven"),
-        (60, "Adulto"),
-        (120, "Anciano")
+        (18, "Joven"),
+        (30, "Adulto"),
+        (60, "Anciano")
     ]
     def __init__(self, nombre: str, edad: int = 0):
         self.__nombre = nombre
@@ -161,7 +161,7 @@ class Tamagotchi:
         })
 
         if self.__hambre < 20 or self.__sed < 20 or self.__limpieza < 20:
-            self._aplicar_efectos({"salud": -2})
+            self._aplicar_efectos({"salud": -3})
             
     def actualizar_edad(self):
         # Envejecer cada 10 turnos (días)

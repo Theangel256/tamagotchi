@@ -12,15 +12,25 @@ class TamagotchiApp:
         ("Manzana", "comida", {"hambre": 20, "felicidad": 5}),
         ("Poción", "medicina", {"salud": 50}),
         ("Pelota", "juguete", {"felicidad": 15, "energia": -5}),
-        ("Agua", "agua", {"sed": 10, "energia": 5}),
-        ("Agua", "agua", {"sed": 10, "energia": 5}),
+        ("Agua", "agua", {"sed": 15, "energia": 5}),
+        ("Agua", "agua", {"sed": 15, "energia": 5}),
     ]
 
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Tamagotchi")
-        self.root.geometry("540x960")
+        self.root.geometry("540x860")
         self.root.configure(bg="#f0f4f8")
+        
+        # Centrar la ventana en el monitor
+        self.root.update_idletasks()
+        window_width = 540
+        window_height = 860
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width // 2) - (window_width // 2)
+        y = (screen_height // 2) - (window_height // 2)
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
         # Pedir nombre
         nombre = simpledialog.askstring("Nombre", "¿Cómo quieres llamar a tu Tamagotchi?", parent=self.root)
