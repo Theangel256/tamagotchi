@@ -22,7 +22,6 @@ class TamagotchiApp:
         self.root.geometry("540x860")
         self.root.configure(bg="#f0f4f8")
         
-        
         # Set window icon
         try:
             self.root.iconbitmap("icons/tamagotchi.ico")

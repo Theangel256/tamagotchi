@@ -54,7 +54,7 @@ jobs:
         }
         
         $changelog = @"
-        ## 📋 Cambios en esta versión
+        ## 📋 Changelog
         
         $commits
         "@
@@ -74,7 +74,7 @@ jobs:
         files: dist/Tamagotchi.exe
         generate_release_notes: false
         body: |
-          # CI build v${{ github.ref_name }}
+          # CI build ${{ github.ref_name }}
           
           ## 💾 Download
           
@@ -84,7 +84,7 @@ jobs:
           
           ## 🛠️ Build Information
           
-          - **Plataforma**: Windows (x64)
+          - **Platform**: Windows (x64)
           - **Python**: 3.12
           - **Build**: #${{ github.run_number }}
           - **Commit**: ${{ github.sha }}
