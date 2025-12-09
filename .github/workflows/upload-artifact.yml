@@ -44,7 +44,8 @@ jobs:
     - name: 📝 Generate Changelog
       id: changelog
       run: |
-        $tag = "CI Build ${github.ref_name}"
+        $title = "CI build ${{ github.ref_name }}"
+        $tag = "${{ github.ref_name }}"
         $previousTag = git describe --tags --abbrev=0 $tag^ 2>$null
         
         if ($previousTag) {
@@ -63,6 +64,7 @@ jobs:
         $changelog | Out-File -FilePath changelog.txt -Encoding utf8
         
         # Also output for GitHub Actions
+        echo "title=$title" >> $env:GITHUB_OUTPUT
         echo "CHANGELOG<<EOF" >> $env:GITHUB_OUTPUT
         echo "$changelog" >> $env:GITHUB_OUTPUT
         echo "EOF" >> $env:GITHUB_OUTPUT
@@ -71,6 +73,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
+        name: ${{ steps.changelog.outputs.title }}
         files: dist/Tamagotchi.exe
         generate_release_notes: false
         body: |
